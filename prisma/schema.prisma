@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// FINANCEBROCRACK DATABASE MODELS
+// Optimized for PostgreSQL / Supabase
+// ============================================
+
+/**
+ * Category: Main financial industry groups
+ * Examples: Investment Banking, Corporate Finance, Accounting
+ */
+model Category {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(255)
+  slug        String   @unique @db.VarChar(100)
+  description String   @db.Text
+  icon        String   @db.VarChar(50) // Lucide icon name or emoji
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  questions Question[]
+
+  @@map("categories")
+}
+
+/**
+ * TestType: Distinguishes between technical knowledge and fit/soft skills
+ * Examples: Technical, Behavioral
+ */
+model TestType {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(255)
+  slug        String   @unique @db.VarChar(100)
+  description String   @db.Text
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  questions Question[]
+
+  @@map(name: "test_types")
+}
+
+/**
+ * Question: Individual interview questions
+ * Linked to a specific category and test type
+ */
+model Question {
+  id         String     @id @default(uuid()) @db.Uuid
+  content    String     @db.Text
+  difficulty Difficulty @default(MEDIUM)
+  source     String?    @db.VarChar(255) // Reference source (e.g. "400 IB Guide")
+  order      Int        @default(0)
+
+  // Foreign Keys
+  categoryId String @db.Uuid
+  testTypeId String @db.Uuid
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  testType TestType @relation(fields: [testTypeId], references: [id], onDelete: Cascade)
+  answers  Answer[]
+
+  // Indexes for performance
+  @@index([categoryId])
+  @@index([testTypeId])
+  @@index([difficulty])
+  @@map("questions")
+}
+
+/**
+ * Answer: Potential answers or model responses for a question
+ */
+model Answer {
+  id          String  @id @default(uuid()) @db.Uuid
+  content     String  @db.Text
+  isCorrect   Boolean @default(false) // Primary for multiple choice questions
+  explanation String? @db.Text // Why this answer is correct or additional tips
+
+  // Foreign Keys
+  questionId String @db.Uuid
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  // Indexes for performance
+  @@index([questionId])
+  @@map("answers")
+}
+
+// --- ENUMS ---
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
