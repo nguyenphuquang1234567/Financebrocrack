@@ -12,7 +12,7 @@ export default function Hero({
     subtitle = "Master Your Finance Interviews"
 }: HeroProps) {
     return (
-        <div className="w-full flex flex-col items-center text-center space-y-8 py-20">
+        <div className="w-full flex flex-col items-center text-center space-y-8 py-0">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
